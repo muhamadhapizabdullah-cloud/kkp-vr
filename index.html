@@ -107,6 +107,28 @@
     background:rgba(15,30,51,.82);border:1px solid #2B4B72;color:var(--ink-dim);
     font-size:12px;padding:6px 12px;border-radius:4px;cursor:pointer;
   }
+
+  /* Hazard popup modal (shown when a hazard marker is tapped) */
+  #hazardModal{
+    position:absolute;inset:0;z-index:25;display:flex;align-items:center;justify-content:center;
+    background:rgba(8,14,24,.6);backdrop-filter:blur(4px);-webkit-backdrop-filter:blur(4px);padding:20px;
+  }
+  .hazard-panel{
+    width:100%;max-width:420px;background:var(--navy2);border:1px solid #2B4B72;border-radius:10px;
+    padding:26px;position:relative;box-shadow:0 20px 60px rgba(0,0,0,.5);
+  }
+  .hazard-panel .close-x{
+    position:absolute;top:14px;right:14px;background:none;border:none;color:var(--ink-dim);
+    font-size:20px;line-height:1;cursor:pointer;padding:4px;
+  }
+  .hazard-panel .top-row{display:flex;align-items:center;gap:10px;margin-bottom:16px;}
+  .hazard-panel .h-emoji{font-size:30px;}
+  .hazard-panel .h-tag{
+    border:1px solid var(--red);color:var(--red);font-size:11px;font-weight:800;letter-spacing:1.5px;
+    padding:4px 12px;border-radius:20px;
+  }
+  .hazard-panel h2{font-size:20px;line-height:1.3;margin:0 0 12px 0;}
+  .hazard-panel p{color:var(--ink-dim);font-size:14.5px;line-height:1.6;margin:0 0 22px 0;}
 </style>
 </head>
 <body>
@@ -144,6 +166,19 @@
 <div id="feedback"></div>
 <div id="hint" class="hidden">Renung/tekan objek untuk pilih &nbsp;•&nbsp; Seret skrin untuk lihat sekeliling</div>
 <button id="exitbtn" class="hidden">Keluar Modul</button>
+
+<div id="hazardModal" class="hidden">
+  <div class="hazard-panel">
+    <button class="close-x" id="hazardModalClose">✕</button>
+    <div class="top-row">
+      <span class="h-emoji" id="hazardModalEmoji"></span>
+      <span class="h-tag">HAZARD</span>
+    </div>
+    <h2 id="hazardModalTitle"></h2>
+    <p id="hazardModalDesc"></p>
+    <button class="btn" id="hazardModalOk">Faham, Teruskan</button>
+  </div>
+</div>
 
 <!-- START -->
 <div class="overlay" id="screen-start">
@@ -425,7 +460,7 @@ function renderEnvironment(modId){
 }
 
 /* ---------------- STATE ---------------- */
-let state = { name:"", device:"tablet", modIndex:0, score:0, found:0, elapsed:0, timer:null, ended:false, startTs:0 };
+let state = { name:"", device:"tablet", modIndex:0, score:0, found:0, elapsed:0, timer:null, ended:false, startTs:0, modalOpen:false, pendingEnd:false };
 
 /* ---------------- GOOGLE SHEETS (VIA APPS SCRIPT) SETUP ---------------- */
 // GANTI dengan URL Web App Apps Script yang anda deploy (lihat panduan yang diberikan).
@@ -484,7 +519,7 @@ function buildMenu(){
 
 /* ---------------- GAMEPLAY (MODUL 2-5: CARI HAZARD) ---------------- */
 function startModule(i){
-  state.modIndex = i; state.found = 0; state.elapsed = 0; state.score = computeScore(0); state.ended = false;
+  state.modIndex = i; state.found = 0; state.elapsed = 0; state.score = computeScore(0); state.ended = false; state.modalOpen = false; state.pendingEnd = false;
   const mod = MODULES[i];
   document.getElementById('sky').setAttribute('color', mod.sky);
   const groundEl = document.getElementById('ground');
@@ -509,39 +544,37 @@ function startModule(i){
     ent.setAttribute('rotation', `0 ${facing.toFixed(1)} 0`);
     ent.dataset.idx = idx;
 
-    const plate = document.createElement('a-plane');
-    plate.setAttribute('class','clickable');
-    plate.setAttribute('width','1.7');
-    plate.setAttribute('height','1.0');
-    plate.setAttribute('color', '#0C1A2B');
-    plate.setAttribute('material','shader:flat;opacity:0.94');
-    plate.setAttribute('position','0 0 0');
+    const glow = document.createElement('a-circle');
+    glow.setAttribute('radius','0.36');
+    glow.setAttribute('color','#F2B705');
+    glow.setAttribute('material','shader:flat;opacity:0.22');
+    glow.setAttribute('position','0 0 -0.01');
+    glow.setAttribute('animation','property: scale; dir: alternate; dur: 1000; loop: true; to: 1.35 1.35 1.35; easing: easeInOutSine');
 
-    const border = document.createElement('a-plane');
-    border.setAttribute('width','1.76');
-    border.setAttribute('height','1.06');
-    border.setAttribute('color','#F2B705');
-    border.setAttribute('material','shader:flat');
-    border.setAttribute('position','0 0 -0.001');
+    const ring = document.createElement('a-ring');
+    ring.setAttribute('radius-inner','0.29');
+    ring.setAttribute('radius-outer','0.34');
+    ring.setAttribute('color','#F2B705');
+    ring.setAttribute('material','shader:flat');
+    ring.setAttribute('position','0 0 -0.005');
+
+    const plate = document.createElement('a-circle');
+    plate.setAttribute('class','clickable');
+    plate.setAttribute('radius','0.28');
+    plate.setAttribute('color', '#0C1A2B');
+    plate.setAttribute('material','shader:flat;opacity:0.96');
+    plate.setAttribute('position','0 0 0');
 
     const emojiText = document.createElement('a-text');
     emojiText.setAttribute('value', item.e);
     emojiText.setAttribute('align','center');
-    emojiText.setAttribute('width','4.2');
-    emojiText.setAttribute('position','0 0.2 0.01');
+    emojiText.setAttribute('width','2.6');
+    emojiText.setAttribute('position','0 0 0.01');
 
-    const labelText = document.createElement('a-text');
-    labelText.setAttribute('value', item.n);
-    labelText.setAttribute('align','center');
-    labelText.setAttribute('color','#EDF1F5');
-    labelText.setAttribute('width','2.0');
-    labelText.setAttribute('wrapCount','24');
-    labelText.setAttribute('position','0 -0.28 0.01');
-
-    ent.appendChild(border);
+    ent.appendChild(glow);
+    ent.appendChild(ring);
     ent.appendChild(plate);
     ent.appendChild(emojiText);
-    ent.appendChild(labelText);
     container.appendChild(ent);
 
     plate.addEventListener('click', ()=> handlePick(idx, ent, plate));
@@ -631,18 +664,37 @@ function flash(msg, ok){
   flash._t = setTimeout(()=>{ f.innerHTML=''; }, 2200);
 }
 
+/* ---------------- HAZARD POPUP MODAL ---------------- */
+function openHazardModal(item){
+  state.modalOpen = true;
+  document.getElementById('hazardModalEmoji').textContent = item.e;
+  document.getElementById('hazardModalTitle').textContent = item.n;
+  document.getElementById('hazardModalDesc').textContent = item.fb;
+  document.getElementById('hazardModal').classList.remove('hidden');
+}
+function closeHazardModal(){
+  state.modalOpen = false;
+  document.getElementById('hazardModal').classList.add('hidden');
+  if(state.pendingEnd){
+    state.pendingEnd = false;
+    setTimeout(()=>endModule(true), 150);
+  }
+}
+document.getElementById('hazardModalOk').onclick = closeHazardModal;
+document.getElementById('hazardModalClose').onclick = closeHazardModal;
+
 function handlePick(idx, ent, plate){
-  if(state.ended || ent.dataset.done === '1') return;
+  if(state.ended || state.modalOpen || ent.dataset.done === '1') return;
   const mod = MODULES[state.modIndex];
   const item = mod.items[idx];
   ent.dataset.done = '1';
-  state.found++;
   plate.setAttribute('color', '#1F5C43');
-  flash('Betul — ' + item.fb, true);
+  state.found++;
   updateHudDisplays();
   if(state.found >= mod.items.length){
-    setTimeout(()=>endModule(true), 400);
+    state.pendingEnd = true;
   }
+  openHazardModal(item);
 }
 
 async function endModule(allFound){
