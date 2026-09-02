@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ms">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>KKP VR — Kenal Pasti Hazard Sekolah</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/aframe/1.4.2/aframe.min.js"></script>
+<style>
+  :root{
+    --navy:#0F1E33;
+    --navy2:#17304F;
+    --yellow:#F2B705;
+    --red:#E1483D;
+    --green:#2E9E6D;
+    --ink:#EDF1F5;
+    --ink-dim:#A9B7C6;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;background:var(--navy);color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Arial,sans-serif;overflow:hidden;}
+  #scene{position:absolute;inset:0;}
+
+  .hazard-stripe{
+    background:repeating-linear-gradient(135deg,var(--yellow) 0 18px,#111 18px 36px);
+  }
+
+  .overlay{
+    position:absolute;inset:0;z-index:20;display:flex;align-items:center;justify-content:center;
+    background:var(--navy);
+    padding:24px;
+  }
+  .hidden{display:none !important;}
+
+  .panel{
+    width:100%;max-width:560px;background:var(--navy2);border-radius:4px;
+    padding:0 0 28px 0;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.4);
+    max-height:92vh;overflow-y:auto;
+  }
+  .panel-top{height:10px;}
+  .panel-body{padding:28px 30px 0 30px;}
+
+  h1.brand{font-size:15px;letter-spacing:.5px;margin:0 0 4px 0;color:var(--yellow);font-weight:700;}
+  h2.title{font-size:28px;line-height:1.15;margin:0 0 6px 0;font-weight:800;}
+  p.sub{color:var(--ink-dim);font-size:15px;line-height:1.5;margin:0 0 22px 0;}
+
+  input[type=text]{
+    width:100%;padding:14px 16px;font-size:17px;border-radius:3px;border:2px solid #2B4B72;
+    background:#0C1826;color:var(--ink);outline:none;margin-bottom:16px;
+  }
+  input[type=text]:focus{border-color:var(--yellow);}
+
+  button.btn{
+    width:100%;padding:14px 16px;font-size:16px;font-weight:700;border:none;border-radius:3px;
+    background:var(--yellow);color:#101820;cursor:pointer;letter-spacing:.2px;
+  }
+  button.btn:active{transform:translateY(1px);}
+  button.btn.secondary{background:transparent;border:2px solid #2B4B72;color:var(--ink);margin-top:10px;}
+  button.btn.danger{background:var(--red);color:#fff;}
+  button.btn[disabled]{opacity:.4;cursor:not-allowed;}
+
+  .modlist{display:flex;flex-direction:column;gap:10px;margin-bottom:6px;}
+  .modcard{
+    display:flex;align-items:center;gap:14px;background:#0C1826;border:1px solid #22405F;
+    border-radius:4px;padding:12px 14px;cursor:pointer;
+  }
+  .modcard:hover{border-color:var(--yellow);}
+  .modcard .num{
+    width:34px;height:34px;flex:none;border-radius:3px;background:var(--navy2);
+    display:flex;align-items:center;justify-content:center;font-weight:800;color:var(--yellow);
+    border:1px solid #2B4B72;
+  }
+  .modcard .emoji{font-size:26px;flex:none;}
+  .modcard .txt{flex:1;}
+  .modcard .txt b{display:block;font-size:15px;}
+  .modcard .txt span{display:block;font-size:12.5px;color:var(--ink-dim);margin-top:2px;}
+
+  .toprow{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;}
+  .linklike{background:none;border:none;color:var(--ink-dim);font-size:13px;cursor:pointer;text-decoration:underline;padding:0;}
+
+  table.lb{width:100%;border-collapse:collapse;font-size:14px;margin-top:4px;}
+  table.lb th{text-align:left;color:var(--ink-dim);font-weight:600;padding:6px 8px;border-bottom:1px solid #22405F;font-size:12px;}
+  table.lb td{padding:7px 8px;border-bottom:1px solid #16283F;}
+  table.lb tr:first-child td{color:var(--yellow);font-weight:700;}
+  table.lb td.rank{color:var(--ink-dim);width:26px;}
+
+  /* HUD during play */
+  #hud{
+    position:absolute;top:0;left:0;right:0;z-index:15;display:flex;justify-content:space-between;
+    padding:14px 16px;pointer-events:none;
+  }
+  .hud-chip{background:rgba(15,30,51,.82);border:1px solid #2B4B72;border-radius:4px;padding:8px 14px;font-size:14px;font-weight:700;}
+  .hud-chip.time{color:var(--yellow);}
+  .hud-chip.warn{color:var(--red);}
+  #hint{
+    position:absolute;bottom:18px;left:0;right:0;text-align:center;z-index:15;pointer-events:none;
+    color:var(--ink-dim);font-size:13px;
+  }
+  #feedback{
+    position:absolute;top:64px;left:0;right:0;text-align:center;z-index:15;pointer-events:none;
+  }
+  #feedback span{
+    display:inline-block;background:rgba(15,30,51,.9);border:1px solid #2B4B72;border-radius:4px;
+    padding:8px 16px;font-size:14px;max-width:340px;
+  }
+  #exitbtn{
+    position:absolute;top:14px;left:50%;transform:translateX(-50%);z-index:16;
+    background:rgba(15,30,51,.82);border:1px solid #2B4B72;color:var(--ink-dim);
+    font-size:12px;padding:6px 12px;border-radius:4px;cursor:pointer;
+  }
+</style>
+</head>
+<body>
+
+<div id="scene-wrap">
+  <a-scene id="scene" embedded vr-mode-ui="enabled: true" renderer="colorManagement: true" loading-screen="enabled:false">
+    <a-assets></a-assets>
+    <a-sky id="sky" color="#12314E"></a-sky>
+    <a-circle id="ground" radius="14" rotation="-90 0 0" position="0 0 0" color="#0C1A2B" material="shader:flat"></a-circle>
+    <a-entity light="type: ambient; intensity: 0.75; color:#fff"></a-entity>
+    <a-entity light="type: directional; intensity: 0.55" position="2 4 1"></a-entity>
+
+    <a-entity id="rig" position="0 1.6 0">
+      <a-camera id="cam" look-controls wasd-controls="enabled:false">
+        <a-entity cursor="fuse:true;fuseTimeout:900" position="0 0 -1"
+          geometry="primitive: ring; radiusInner:0.008; radiusOuter:0.014"
+          material="color:#F2B705; shader:flat; opacity:0.9"
+          raycaster="objects:.clickable; far:20"
+          animation__click="property: scale; startEvents: click; from: 0.6 0.6 0.6; to: 1 1 1; dur:180"
+          animation__fusing="property: scale; startEvents: fusing; from:1 1 1; to:1.8 1.8 1.8; dur:900">
+        </a-entity>
+      </a-camera>
+    </a-entity>
+
+    <a-entity id="envContainer"></a-entity>
+    <a-entity id="hazardContainer"></a-entity>
+  </a-scene>
+</div>
+
+<div id="hud" class="hidden">
+  <div class="hud-chip time" id="hudTime">0s</div>
+  <div class="hud-chip" id="hudFound">0/5 hazard</div>
+  <div class="hud-chip" id="hudScore">0 markah</div>
+</div>
+<div id="feedback"></div>
+<div id="hint" class="hidden">Renung/tekan objek untuk pilih &nbsp;•&nbsp; Seret skrin untuk lihat sekeliling</div>
+<button id="exitbtn" class="hidden">Keluar Modul</button>
+
+<!-- START -->
+<div class="overlay" id="screen-start">
+  <div class="panel">
+    <div class="panel-top hazard-stripe"></div>
+    <div class="panel-body">
+      <h1 class="brand">KELAB KESELAMATAN &amp; KESIHATAN SEKOLAH</h1>
+      <h2 class="title">Kenal Pasti Hazard — Modul VR</h2>
+      <p class="sub">Modul 1 membawa anda belajar 5 jenis hazard dahulu sebelum kuiz. Modul 2–5 pula minta anda cari hazard di lokasi 3D secepat mungkin — semakin pantas, semakin tinggi markah! Masukkan nama untuk mula.</p>
+      <input type="text" id="nameInput" maxlength="30" placeholder="Nama penuh pelajar">
+      <button class="btn" id="btnStart">Seterusnya</button>
+    </div>
+  </div>
+</div>
+
+<!-- DEVICE -->
+<div class="overlay hidden" id="screen-device">
+  <div class="panel">
+    <div class="panel-top hazard-stripe"></div>
+    <div class="panel-body">
+      <h1 class="brand">HAI, <span id="deviceName">PELAJAR</span></h1>
+      <h2 class="title" style="font-size:22px;">Anda Guna Peranti Apa?</h2>
+      <p class="sub">Ini membantu sesuaikan cara anda memilih objek hazard dalam modul.</p>
+      <div class="modlist">
+        <div class="modcard" id="pickTablet">
+          <div class="emoji">📱</div>
+          <div class="txt"><b>Tablet / Telefon</b><span>Seret skrin untuk lihat sekeliling, ketik objek untuk pilih</span></div>
+        </div>
+        <div class="modcard" id="pickVR">
+          <div class="emoji">🥽</div>
+          <div class="txt"><b>VR Headset</b><span>Pusingkan kepala anda, tahan pandangan pada objek untuk pilih</span></div>
+        </div>
+      </div>
+      <button class="btn secondary" id="btnBackToStart">Kembali</button>
+    </div>
+  </div>
+</div>
+
+<!-- MENU -->
+<div class="overlay hidden" id="screen-menu">
+  <div class="panel">
+    <div class="panel-top hazard-stripe"></div>
+    <div class="panel-body">
+      <div class="toprow">
+        <div>
+          <h1 class="brand">SELAMAT DATANG, <span id="menuName">Pelajar</span></h1>
+          <h2 class="title" style="font-size:22px;">Pilih Modul</h2>
+        </div>
+        <button class="linklike" id="btnChangeName">Tukar nama</button>
+      </div>
+      <div class="modlist" id="modList"></div>
+      <button class="btn secondary" id="btnShowLB">Lihat Papan Pendahulu</button>
+    </div>
+  </div>
+</div>
+
+<!-- LEADERBOARD -->
+<div class="overlay hidden" id="screen-lb">
+  <div class="panel">
+    <div class="panel-top hazard-stripe"></div>
+    <div class="panel-body">
+      <h2 class="title" style="font-size:22px;">Papan Pendahulu</h2>
+      <p class="sub" id="lbModTitle">Modul 1</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px;" id="lbTabs"></div>
+      <table class="lb">
+        <thead><tr><th class="rank">#</th><th>Nama</th><th>Markah</th><th>Masa</th></tr></thead>
+        <tbody id="lbBody"></tbody>
+      </table>
+      <button class="btn secondary" id="btnBackFromLB">Kembali ke Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- LESSON (MODUL 1) -->
+<div class="overlay hidden" id="screen-lesson">
+  <div class="panel">
+    <div class="panel-top hazard-stripe"></div>
+    <div class="panel-body">
+      <h1 class="brand">MODUL 1 — DALAM BILIK DARJAH</h1>
+      <h2 class="title" style="font-size:22px;">Apa Itu Hazard?</h2>
+      <p class="sub">Hazard ialah sebarang sumber yang berpotensi menyebabkan kecederaan, penyakit, atau kemudaratan. Terdapat 5 jenis hazard utama di sekolah — tekan tab di bawah untuk teroka setiap satu:</p>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px;" id="lessonTabs"></div>
+      <div style="background:#0C1826;border:1px solid #22405F;border-radius:4px;padding:16px;margin-bottom:18px;">
+        <b id="lessonCatTitle" style="display:block;font-size:17px;margin-bottom:6px;color:var(--yellow);"></b>
+        <p id="lessonCatDef" style="color:var(--ink-dim);font-size:14px;line-height:1.5;margin:0 0 10px 0;"></p>
+        <p style="font-size:12.5px;color:var(--ink-dim);margin:0 0 6px 0;font-weight:700;">CONTOH:</p>
+        <ul id="lessonCatExamples" style="margin:0;padding-left:18px;font-size:14px;line-height:1.7;"></ul>
+      </div>
+      <button class="btn" id="btnLessonNext">Seterusnya</button>
+      <button class="btn hidden" id="btnStartQuiz">Mula Kuiz (5 Soalan)</button>
+      <button class="btn secondary" id="btnLessonBack">Kembali ke Menu</button>
+    </div>
+  </div>
+</div>
+
+<!-- QUIZ (MODUL 1) -->
+<div class="overlay hidden" id="screen-quiz">
+  <div class="panel">
+    <div class="panel-top hazard-stripe"></div>
+    <div class="panel-body">
+      <h1 class="brand">MODUL 1 — KUIZ</h1>
+      <h2 class="title" style="font-size:20px;" id="quizProgress">Soalan 1/5</h2>
+      <p class="sub" id="quizQuestion" style="font-size:16px;color:var(--ink);margin-bottom:16px;">—</p>
+      <div class="modlist" id="quizOptions"></div>
+      <p class="sub" id="quizExplain" style="display:none;background:#0C1826;border:1px solid #22405F;border-radius:4px;padding:12px;margin-top:4px;"></p>
+      <button class="btn" id="btnQuizNext" disabled style="margin-top:16px;">Soalan Seterusnya</button>
+    </div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div class="overlay hidden" id="screen-result">
+  <div class="panel">
+    <div class="panel-top hazard-stripe"></div>
+    <div class="panel-body">
+      <h1 class="brand" id="resultModTitle">MODUL 1</h1>
+      <h2 class="title" id="resultHeadline">Modul selesai!</h2>
+      <p class="sub" id="resultDesc">—</p>
+      <table class="lb" style="margin-bottom:18px;">
+        <tbody>
+          <tr><td>Markah</td><td id="resScore" style="text-align:right;font-weight:700;color:var(--yellow);">0</td></tr>
+          <tr><td id="resFoundLabel">Hazard dijumpai</td><td id="resFound" style="text-align:right;">0/5</td></tr>
+          <tr><td>Masa diguna</td><td id="resTime" style="text-align:right;">0s</td></tr>
+        </tbody>
+      </table>
+      <p class="sub" style="margin-bottom:8px;">Kedudukan anda dalam Modul ini:</p>
+      <table class="lb" id="resultLBTable">
+        <thead><tr><th class="rank">#</th><th>Nama</th><th>Markah</th><th>Masa</th></tr></thead>
+        <tbody id="resLBBody"></tbody>
+      </table>
+      <button class="btn" id="btnRetry">Cuba Lagi</button>
+      <button class="btn secondary" id="btnToMenu">Modul Lain</button>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ---------------- DATA ---------------- */
+const MODULES = [
+  {
+    id:1, title:"Dalam Bilik Darjah", sub:"Belajar 5 jenis hazard sekolah, kemudian jawab kuiz 5 soalan", emoji:"📖", type:"lesson",
+    categories:[
+      {key:"fizikal", label:"Hazard Fizikal", def:"Bahaya yang datang daripada keadaan fizikal persekitaran dan boleh menyebabkan kecederaan serta-merta.", examples:["Lantai licin atau basah","Kabel elektrik yang terdedah","Kerusi atau meja yang patah/tajam"]},
+      {key:"kimia", label:"Hazard Kimia", def:"Bahaya akibat pendedahan kepada bahan kimia yang boleh memudaratkan kesihatan.", examples:["Bahan pencuci tanpa label disimpan sembarangan","Wap/gas daripada uji kaji makmal","Cat atau gam berbau tajam tanpa pengudaraan"]},
+      {key:"biologi", label:"Hazard Biologi", def:"Bahaya daripada organisma hidup atau mikroorganisma yang boleh menyebabkan penyakit.", examples:["Bakteria di tandas yang kotor","Nyamuk Aedes membiak di takungan air","Makanan basi atau tercemar di kantin"]},
+      {key:"ergonomik", label:"Hazard Ergonomik", def:"Bahaya akibat postur badan atau cara aktiviti dilakukan secara tidak sesuai dalam jangka masa panjang.", examples:["Beg sekolah yang terlalu berat","Kerusi/meja tidak sesuai dengan tinggi badan pelajar","Duduk terlalu lama tanpa berehat semasa kelas"]},
+      {key:"psikososial", label:"Hazard Psikososial", def:"Bahaya berkaitan tekanan emosi, mental, atau sosial yang menjejaskan kesejahteraan pelajar.", examples:["Buli (bullying) sesama pelajar","Tekanan berlebihan akibat peperiksaan","Gangguan atau buli siber (cyberbullying)"]}
+    ],
+    quiz:[
+      {q:"Lantai licin akibat tumpahan air di bilik darjah tergolong dalam jenis hazard apa?", options:["Hazard Fizikal","Hazard Kimia","Hazard Biologi","Hazard Psikososial"], correct:0, explain:"Lantai licin adalah bahaya fizikal kerana boleh menyebabkan kecederaan serta-merta seperti tergelincir."},
+      {q:"Nyamuk Aedes yang membiak di takungan air tergolong dalam hazard apa?", options:["Hazard Ergonomik","Hazard Biologi","Hazard Fizikal","Hazard Kimia"], correct:1, explain:"Nyamuk ialah organisma hidup pembawa penyakit — ini hazard biologi."},
+      {q:"Beg sekolah yang terlalu berat dan dibawa setiap hari boleh menyebabkan hazard jenis apa?", options:["Hazard Kimia","Hazard Psikososial","Hazard Ergonomik","Hazard Biologi"], correct:2, explain:"Beban berat berpanjangan pada badan pelajar adalah isu ergonomik."},
+      {q:"Buli (bullying) di sekolah tergolong dalam hazard jenis apa?", options:["Hazard Psikososial","Hazard Fizikal","Hazard Kimia","Hazard Ergonomik"], correct:0, explain:"Buli memberi kesan kepada emosi dan mental pelajar — ini hazard psikososial."},
+      {q:"Bahan pencuci tanpa label yang disimpan berhampiran makanan tergolong dalam hazard apa?", options:["Hazard Biologi","Hazard Ergonomik","Hazard Fizikal","Hazard Kimia"], correct:3, explain:"Bahan pencuci ialah bahan kimia yang boleh memudaratkan jika tersalah guna."}
+    ]
+  },
+  {
+    id:2, title:"Padang & Luar Kelas", sub:"Cari 5 hazard secepat mungkin di padang dan luar kelas", sky:"#8FC7E8", ground:"#4C8C4A", radius:16, emoji:"🌳", type:"hunt",
+    items:[
+      {e:"⚡",n:"Aktiviti diteruskan semasa ribut petir",hazard:true,fb:"Petir amat berbahaya di kawasan terbuka dan boleh membawa maut."},
+      {e:"🕳️",n:"Lubang longkang tanpa penutup",hazard:true,fb:"Pelajar boleh tersepit kaki atau terjatuh ke dalam longkang terbuka."},
+      {e:"🏀",n:"Peralatan sukan bersepah di laluan",hazard:true,fb:"Peralatan bersepah menjadi punca pelajar tersadung dan jatuh."},
+      {e:"🥅",n:"Tiang gol senget dan rosak",hazard:true,fb:"Struktur senget boleh runtuh dan menimpa pelajar."},
+      {e:"🐝",n:"Sarang lebah di pokok berhampiran",hazard:true,fb:"Sarang serangga berbahaya boleh menyebabkan sengatan beramai-ramai."}
+    ]
+  },
+  {
+    id:3, title:"Makmal & Bengkel", sub:"Cari 5 hazard secepat mungkin di makmal dan bengkel", sky:"#DDE6EC", ground:"#A9B4BC", radius:9, emoji:"🧪", type:"hunt",
+    items:[
+      {e:"🧪",n:"Botol bahan kimia tanpa label",hazard:true,fb:"Bahan kimia tanpa label sukar dikenal pasti dan boleh menyebabkan kemalangan."},
+      {e:"🔥",n:"Bunsen burner menyala tanpa pengawasan",hazard:true,fb:"Api terbuka tanpa pengawasan berisiko menyebabkan kebakaran."},
+      {e:"🥽",n:"Pelajar tiada goggle semasa uji kaji",hazard:true,fb:"Tanpa PPE, mata terdedah kepada percikan bahan kimia."},
+      {e:"⚡",n:"Wayar terdedah pada mesin bengkel",hazard:true,fb:"Wayar terdedah berisiko menyebabkan kejutan elektrik."},
+      {e:"🪚",n:"Mesin gergaji tanpa penutup keselamatan",hazard:true,fb:"Bahagian mesin terdedah boleh menyebabkan kecederaan serius."}
+    ]
+  },
+  {
+    id:4, title:"Kantin Sekolah", sub:"Cari 5 hazard secepat mungkin di kantin sekolah", sky:"#F6E9C9", ground:"#D9C79A", radius:9, emoji:"🍽️", type:"hunt",
+    items:[
+      {e:"🍳",n:"Minyak panas terdedah berhampiran laluan",hazard:true,fb:"Minyak panas terdedah boleh menyebabkan kelecuran serius."},
+      {e:"💦",n:"Lantai basah tanpa tanda amaran",hazard:true,fb:"Lantai licin tanpa amaran meningkatkan risiko jatuh."},
+      {e:"🪰",n:"Makanan terdedah tanpa penutup",hazard:true,fb:"Makanan terdedah mudah dihinggapi lalat dan mencemarkan kesihatan."},
+      {e:"🛢️",n:"Tabung gas diletak dekat punca api",hazard:true,fb:"Tabung gas berhampiran api berisiko tinggi menyebabkan letupan."},
+      {e:"🚪",n:"Laluan kecemasan tersekat troli",hazard:true,fb:"Laluan tersekat menghalang proses pengosongan semasa kecemasan."}
+    ]
+  },
+  {
+    id:5, title:"Luar Sekolah — Lintasan Jalan", sub:"Cari 5 hazard secepat mungkin semasa melintas jalan raya", sky:"#A9C4D4", ground:"#4A4A4A", radius:16, emoji:"🚸", type:"hunt",
+    items:[
+      {e:"🚗",n:"Kereta laju tanpa perlahan di zon sekolah",hazard:true,fb:"Kenderaan laju berhampiran sekolah amat berbahaya kepada pejalan kaki."},
+      {e:"🚸",n:"Pelajar melintas tanpa guna lintasan zebra",hazard:true,fb:"Melintas sembarangan meningkatkan risiko dilanggar kenderaan."},
+      {e:"📱",n:"Pelajar melintas sambil bertelefon",hazard:true,fb:"Perhatian terganggu menyebabkan pelajar terlepas pandang bahaya."},
+      {e:"🚧",n:"Tiada pengawal lalu lintas bertugas",hazard:true,fb:"Ketiadaan pengawasan meningkatkan risiko kemalangan waktu sesak."},
+      {e:"🚦",n:"Lampu isyarat lintasan rosak",hazard:true,fb:"Lampu isyarat rosak mengelirukan pejalan kaki dan pemandu."}
+    ]
+  }
+];
+
+function buildEnvShapes(modId){
+  const s = [];
+  if(modId===1){ // Dalam Bilik Darjah
+    s.push({t:'box',p:[0,2,-6],sz:[12,4,0.15],c:'#EDE6D2'});
+    s.push({t:'box',p:[-6,2,0],sz:[0.15,4,12],c:'#EDE6D2'});
+    s.push({t:'box',p:[6,2,0],sz:[0.15,4,12],c:'#EDE6D2'});
+    s.push({t:'box',p:[0,2.3,-5.9],sz:[3.6,1.5,0.05],c:'#FAFAF5'});
+    s.push({t:'box',p:[0,2.3,-5.87],sz:[0.05,0.05,0.02],c:'#2E9E6D'});
+    for(let i=-1;i<=1;i++) s.push({t:'box',p:[5.9,2.4,i*3.2],sz:[0.05,1.1,1.5],c:'#BFE6F5'});
+    for(let r=0;r<2;r++) for(let c=-2;c<=2;c++){
+      const dz=-1.4-r*1.5, dx=c*1.25;
+      s.push({t:'box',p:[dx,0.42,dz],sz:[0.85,0.06,0.5],c:'#C79A5B'});
+      s.push({t:'cylinder',p:[dx,0.21,dz],r:0.04,h:0.42,c:'#8A6B3F'});
+      s.push({t:'box',p:[dx,0.55,dz+0.32],sz:[0.5,0.5,0.06],c:'#3C3C3C'});
+    }
+    s.push({t:'box',p:[-5.9,1.6,4.5],sz:[0.05,3.2,1.3],c:'#8A5A34'});
+  } else if(modId===2){ // Padang & Luar Kelas
+    s.push({t:'box',p:[0,1,-9],sz:[3.2,0.12,0.12],c:'#F5F5F5'});
+    s.push({t:'box',p:[-1.6,0.5,-9],sz:[0.12,1,0.12],c:'#F5F5F5'});
+    s.push({t:'box',p:[1.6,0.5,-9],sz:[0.12,1,0.12],c:'#F5F5F5'});
+    const trees=[[-9,-3],[-10,3],[9,-4],[10,4],[8,8],[-8,8],[-11,-6],[11,-6]];
+    trees.forEach(p=>{
+      s.push({t:'cylinder',p:[p[0],0.6,p[1]],r:0.16,h:1.2,c:'#6B4A2C'});
+      s.push({t:'cone',p:[p[0],1.7,p[1]],r:0.95,h:1.7,c:'#3E7D4F'});
+    });
+    s.push({t:'box',p:[0,2.4,-14],sz:[18,4.8,0.3],c:'#C9D3DA'});
+    for(let i=-3;i<=3;i++) s.push({t:'box',p:[i*2.2,3.6,-13.85],sz:[0.9,0.9,0.05],c:'#8FC7E8'});
+    s.push({t:'box',p:[-13,0.5,0],sz:[0.15,1,26],c:'#D8D8D8',rot:[0,0,0]});
+  } else if(modId===3){ // Makmal & Bengkel
+    s.push({t:'box',p:[0,2,-6],sz:[12,4,0.15],c:'#D7DDE2'});
+    s.push({t:'box',p:[-6,2,0],sz:[0.15,4,12],c:'#D7DDE2'});
+    s.push({t:'box',p:[6,2,0],sz:[0.15,4,12],c:'#D7DDE2'});
+    s.push({t:'box',p:[-2,0.5,-2],sz:[3.2,0.9,0.8],c:'#7C8A94'});
+    s.push({t:'box',p:[2,0.5,-2],sz:[3.2,0.9,0.8],c:'#7C8A94'});
+    [-3.2,-1.4,1.4,3.2].forEach(x=> s.push({t:'cylinder',p:[x,0.3,-0.4],r:0.2,h:0.5,c:'#3C3C3C'}));
+    s.push({t:'box',p:[-4.2,1,-5.8],sz:[1.4,2,0.5],c:'#8E9BA6'});
+    s.push({t:'box',p:[4.2,1,-5.8],sz:[1.4,2,0.5],c:'#8E9BA6'});
+    s.push({t:'box',p:[0,1.5,-5.8],sz:[1.7,2.8,0.55],c:'#5F6B75'});
+    s.push({t:'box',p:[-5.9,1.6,4.5],sz:[0.05,3.2,1.3],c:'#6B7680'});
+  } else if(modId===4){ // Kantin Sekolah
+    s.push({t:'box',p:[0,2,-6],sz:[12,4,0.15],c:'#F3E3B5'});
+    s.push({t:'box',p:[-6,2,0],sz:[0.15,4,12],c:'#F3E3B5'});
+    s.push({t:'box',p:[6,2,0],sz:[0.15,4,12],c:'#F3E3B5'});
+    s.push({t:'box',p:[0,0.6,-5.6],sz:[5.2,1.2,0.7],c:'#B5652E'});
+    s.push({t:'box',p:[0,1.35,-5.6],sz:[5.4,0.08,0.9],c:'#8A3E1A'});
+    for(let r=0;r<2;r++) for(let c=-1;c<=1;c++){
+      const tx=c*2.4, tz=-0.8-r*2.2;
+      s.push({t:'cylinder',p:[tx,0.55,tz],r:0.55,h:0.06,c:'#DED2B0'});
+      s.push({t:'cylinder',p:[tx,0.27,tz],r:0.05,h:0.55,c:'#8A8A8A'});
+    }
+    s.push({t:'box',p:[-5.9,1.6,4.5],sz:[0.05,3.2,1.3],c:'#8A5A34'});
+  } else if(modId===5){ // Luar Sekolah - Lintasan Jalan
+    s.push({t:'box',p:[0,0.04,5.5],sz:[16,0.08,3],c:'#B9B9B9'});
+    s.push({t:'box',p:[0,0.04,-5.5],sz:[16,0.08,3],c:'#B9B9B9'});
+    for(let i=-3;i<=3;i++) s.push({t:'plane',p:[i*0.95,0.03,0],sz:[0.5,3],c:'#FFFFFF',rot:[-90,0,0]});
+    s.push({t:'box',p:[-10,2.6,-9],sz:[7,5.2,0.3],c:'#C7CDD1'});
+    s.push({t:'box',p:[10,2.6,-9],sz:[7,5.2,0.3],c:'#C7CDD1'});
+    s.push({t:'box',p:[7,1.2,4.5],sz:[0.1,2.4,1.6],c:'#2E6DB4'});
+    s.push({t:'cylinder',p:[-7,1,4.5],r:0.06,h:2,c:'#909090'});
+    s.push({t:'box',p:[-7,2.1,4.5],sz:[0.7,0.7,0.05],c:'#F2B705'});
+    s.push({t:'box',p:[-9,0.45,1.5],sz:[1.9,0.7,0.9],c:'#7A2E2E'});
+    s.push({t:'box',p:[9,0.45,-1.5],sz:[1.9,0.7,0.9],c:'#2E4F7A'});
+  }
+  return s;
+}
+function renderEnvironment(modId){
+  const container = document.getElementById('envContainer');
+  container.innerHTML = '';
+  buildEnvShapes(modId).forEach(spec=>{
+    let el;
+    if(spec.t==='box'){ el=document.createElement('a-box'); el.setAttribute('width',spec.sz[0]); el.setAttribute('height',spec.sz[1]); el.setAttribute('depth',spec.sz[2]); }
+    else if(spec.t==='cylinder'){ el=document.createElement('a-cylinder'); el.setAttribute('radius',spec.r); el.setAttribute('height',spec.h); }
+    else if(spec.t==='cone'){ el=document.createElement('a-cone'); el.setAttribute('radius-bottom',spec.r); el.setAttribute('radius-top',0.02); el.setAttribute('height',spec.h); }
+    else if(spec.t==='plane'){ el=document.createElement('a-plane'); el.setAttribute('width',spec.sz[0]); el.setAttribute('height',spec.sz[1]); }
+    el.setAttribute('color', spec.c);
+    el.setAttribute('material','shader:flat');
+    el.setAttribute('position', spec.p.join(' '));
+    if(spec.rot) el.setAttribute('rotation', spec.rot.join(' '));
+    container.appendChild(el);
+  });
+}
+
+/* ---------------- STATE ---------------- */
+let state = { name:"", device:"tablet", modIndex:0, score:0, found:0, elapsed:0, timer:null, ended:false, startTs:0 };
+
+/* ---------------- GOOGLE SHEETS (VIA APPS SCRIPT) SETUP ---------------- */
+// GANTI dengan URL Web App Apps Script yang anda deploy (lihat panduan yang diberikan).
+// Contoh: "https://script.google.com/macros/s/AKfycbxxxxxxxxxxxxxxxxxxxx/exec"
+const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwPAX4bAhLKg5WHgcn-ocmUi6L2YdCvlLdJ_DD5tdX0b42vz6BoWCppVANWZPoaX2gC2A/exec";
+
+/* ---------------- STORAGE HELPERS (Google Sheets) ---------------- */
+async function getLB(modId){
+  if(APPS_SCRIPT_URL.startsWith("GANTI")) return [];
+  try{
+    const res = await fetch(`${APPS_SCRIPT_URL}?action=list&mod=${modId}`);
+    const list = await res.json();
+    list.sort((a,b)=> b.score - a.score || a.timeUsed - b.timeUsed);
+    return list;
+  }catch(e){ console.error('Gagal baca papan pendahulu:', e); return []; }
+}
+async function pushLB(modId, entry){
+  if(!APPS_SCRIPT_URL.startsWith("GANTI")){
+    try{
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        body: JSON.stringify({ mod: modId, name: entry.name, score: entry.score, timeUsed: entry.timeUsed, ts: entry.ts })
+      });
+    }catch(e){ console.error('Gagal simpan markah:', e); }
+  }
+  const list = await getLB(modId);
+  return list.slice(0,50);
+}
+async function loadLastName(){
+  try{
+    const n = localStorage.getItem('kkp-last-name');
+    if(n) document.getElementById('nameInput').value = n;
+  }catch(e){}
+}
+async function saveLastName(n){
+  try{ localStorage.setItem('kkp-last-name', n); }catch(e){}
+}
+
+/* ---------------- SCREEN HELPERS ---------------- */
+function show(id){ document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden')); document.getElementById(id).classList.remove('hidden'); }
+function hud(v){ document.getElementById('hud').classList.toggle('hidden', !v); document.getElementById('hint').classList.toggle('hidden', !v); document.getElementById('exitbtn').classList.toggle('hidden', !v); }
+
+function buildMenu(){
+  document.getElementById('menuName').textContent = state.name;
+  const wrap = document.getElementById('modList');
+  wrap.innerHTML = '';
+  MODULES.forEach((m,i)=>{
+    const div = document.createElement('div');
+    div.className = 'modcard';
+    div.innerHTML = `<div class="num">${m.id}</div><div class="emoji">${m.emoji}</div>
+      <div class="txt"><b>${m.title}</b><span>${m.sub}</span></div>`;
+    div.onclick = ()=> m.type === 'lesson' ? startLesson() : startModule(i);
+    wrap.appendChild(div);
+  });
+}
+
+/* ---------------- GAMEPLAY (MODUL 2-5: CARI HAZARD) ---------------- */
+function startModule(i){
+  state.modIndex = i; state.found = 0; state.elapsed = 0; state.score = computeScore(0); state.ended = false;
+  const mod = MODULES[i];
+  document.getElementById('sky').setAttribute('color', mod.sky);
+  const groundEl = document.getElementById('ground');
+  groundEl.setAttribute('color', mod.ground);
+  groundEl.setAttribute('radius', mod.radius);
+  renderEnvironment(mod.id);
+  const container = document.getElementById('hazardContainer');
+  container.innerHTML = '';
+
+  const n = mod.items.length;
+  mod.items.forEach((item, idx)=>{
+    const angle = (idx / n) * 360;
+    const rad = angle * Math.PI/180;
+    const radius = 3.6;
+    const x = Math.sin(rad)*radius;
+    const z = -Math.cos(rad)*radius;
+    const y = 1.35 + ((idx % 3) - 1) * 0.35;
+    const facing = angle + 180;
+
+    const ent = document.createElement('a-entity');
+    ent.setAttribute('position', `${x.toFixed(2)} ${y.toFixed(2)} ${z.toFixed(2)}`);
+    ent.setAttribute('rotation', `0 ${facing.toFixed(1)} 0`);
+    ent.dataset.idx = idx;
+
+    const plate = document.createElement('a-plane');
+    plate.setAttribute('class','clickable');
+    plate.setAttribute('width','1.7');
+    plate.setAttribute('height','1.0');
+    plate.setAttribute('color', '#0C1A2B');
+    plate.setAttribute('material','shader:flat;opacity:0.94');
+    plate.setAttribute('position','0 0 0');
+
+    const border = document.createElement('a-plane');
+    border.setAttribute('width','1.76');
+    border.setAttribute('height','1.06');
+    border.setAttribute('color','#F2B705');
+    border.setAttribute('material','shader:flat');
+    border.setAttribute('position','0 0 -0.001');
+
+    const emojiText = document.createElement('a-text');
+    emojiText.setAttribute('value', item.e);
+    emojiText.setAttribute('align','center');
+    emojiText.setAttribute('width','4.2');
+    emojiText.setAttribute('position','0 0.2 0.01');
+
+    const labelText = document.createElement('a-text');
+    labelText.setAttribute('value', item.n);
+    labelText.setAttribute('align','center');
+    labelText.setAttribute('color','#EDF1F5');
+    labelText.setAttribute('width','2.0');
+    labelText.setAttribute('wrapCount','24');
+    labelText.setAttribute('position','0 -0.28 0.01');
+
+    ent.appendChild(border);
+    ent.appendChild(plate);
+    ent.appendChild(emojiText);
+    ent.appendChild(labelText);
+    container.appendChild(ent);
+
+    plate.addEventListener('click', ()=> handlePick(idx, ent, plate));
+  });
+
+  updateHudDisplays();
+  hud(true);
+  applyDeviceMode();
+  document.querySelectorAll('.overlay').forEach(o=>o.classList.add('hidden'));
+
+  if(state.timer) clearInterval(state.timer);
+  state.startTs = Date.now();
+  state.timer = setInterval(tick, 1000);
+}
+
+function computeScore(elapsedSeconds){
+  return Math.max(50, Math.round((1000 - elapsedSeconds*12)/10)*10);
+}
+
+function tick(){
+  state.elapsed++;
+  state.score = computeScore(state.elapsed);
+  updateHudDisplays();
+  if(state.elapsed >= 300){ endModule(false); } // had pengaman: tamat automatik selepas 5 minit
+}
+
+function applyDeviceMode(){
+  const cursorEl = document.querySelector('[cursor]');
+  const hint = document.getElementById('hint');
+  if(state.device === 'vr'){
+    cursorEl.setAttribute('cursor', 'fuse:true;fuseTimeout:900');
+    hint.textContent = 'Cari 5 hazard secepat mungkin! Tahan pandangan pada objek untuk pilih, ATAU tekan butang remote VR.';
+  } else {
+    cursorEl.setAttribute('cursor', 'fuse:false');
+    hint.textContent = 'Cari 5 hazard secepat mungkin! Seret skrin untuk lihat sekeliling, ketik objek untuk pilih.';
+  }
+}
+
+/* ---------------- REMOTE / BLUETOOTH CLICKER SUPPORT (contoh: VR Shinecon) ---------------- */
+// Kebanyakan remote Bluetooth VR menghantar isyarat sebagai kekunci Enter/Space,
+// ATAU sebagai butang gamepad Bluetooth. Kedua-dua disokong di sini supaya
+// pelajar boleh "klik" objek yang sedang direnung tanpa perlu sentuh skrin.
+function isGameplayActive(){
+  return !document.getElementById('hud').classList.contains('hidden') && !state.ended;
+}
+function triggerCursorSelect(){
+  if(!isGameplayActive()) return;
+  const cursorEl = document.querySelector('[cursor]');
+  if(!cursorEl || !cursorEl.components || !cursorEl.components.raycaster) return;
+  const els = cursorEl.components.raycaster.intersectedEls;
+  if(els && els.length){ els[0].emit('click'); }
+}
+document.addEventListener('keydown', (e)=>{
+  if(e.key === 'Enter' || e.key === ' ' || e.code === 'Space'){
+    triggerCursorSelect();
+  }
+});
+let _gpPrevPressed = false;
+function pollGamepad(){
+  if(isGameplayActive() && navigator.getGamepads){
+    const pads = navigator.getGamepads();
+    let pressed = false;
+    for(const gp of pads){
+      if(gp && gp.buttons && gp.buttons.some(b=>b && b.pressed)){ pressed = true; break; }
+    }
+    if(pressed && !_gpPrevPressed){ triggerCursorSelect(); }
+    _gpPrevPressed = pressed;
+  } else {
+    _gpPrevPressed = false;
+  }
+  requestAnimationFrame(pollGamepad);
+}
+requestAnimationFrame(pollGamepad);
+
+function updateHudDisplays(){
+  const mod = MODULES[state.modIndex];
+  const hazardCount = mod.items.length;
+  document.getElementById('hudTime').textContent = state.elapsed + 's';
+  document.getElementById('hudFound').textContent = state.found + '/' + hazardCount;
+  document.getElementById('hudScore').textContent = state.score + ' markah';
+}
+
+function flash(msg, ok){
+  const f = document.getElementById('feedback');
+  f.innerHTML = `<span style="color:${ok?'#2E9E6D':'#E1483D'}">${msg}</span>`;
+  clearTimeout(flash._t);
+  flash._t = setTimeout(()=>{ f.innerHTML=''; }, 2200);
+}
+
+function handlePick(idx, ent, plate){
+  if(state.ended || ent.dataset.done === '1') return;
+  const mod = MODULES[state.modIndex];
+  const item = mod.items[idx];
+  ent.dataset.done = '1';
+  state.found++;
+  plate.setAttribute('color', '#1F5C43');
+  flash('Betul — ' + item.fb, true);
+  updateHudDisplays();
+  if(state.found >= mod.items.length){
+    setTimeout(()=>endModule(true), 400);
+  }
+}
+
+async function endModule(allFound){
+  if(state.ended) return;
+  state.ended = true;
+  if(state.timer) clearInterval(state.timer);
+  hud(false);
+  const mod = MODULES[state.modIndex];
+  const hazardCount = mod.items.length;
+  const timeUsed = state.elapsed;
+  const finalScore = allFound ? computeScore(timeUsed) : Math.round((state.found/hazardCount) * 400);
+  state.score = finalScore;
+
+  document.getElementById('resultModTitle').textContent = 'MODUL ' + mod.id + ' — ' + mod.title.toUpperCase();
+  document.getElementById('resultHeadline').textContent = allFound ? 'Semua hazard dijumpai!' : 'Sesi tamat';
+  document.getElementById('resultDesc').textContent = allFound
+    ? `Anda menjumpai kelima-lima hazard dalam masa ${timeUsed} saat. Lebih pantas, lebih tinggi markah!`
+    : `Anda menjumpai ${state.found} daripada ${hazardCount} hazard sebelum sesi tamat.`;
+  document.getElementById('resFoundLabel').textContent = 'Hazard dijumpai';
+  document.getElementById('resScore').textContent = finalScore;
+  document.getElementById('resFound').textContent = state.found + '/' + hazardCount;
+  document.getElementById('resTime').textContent = timeUsed + 's';
+
+  const entry = { name: state.name, score: finalScore, timeUsed, ts: Date.now() };
+  const list = await pushLB(mod.id, entry);
+  renderLBTable(document.getElementById('resLBBody'), list.slice(0,10), entry);
+
+  show('screen-result');
+}
+
+function renderLBTable(tbody, list, highlightEntry){
+  tbody.innerHTML = '';
+  if(list.length === 0){
+    tbody.innerHTML = '<tr><td colspan="4" style="color:var(--ink-dim)">Belum ada rekod lagi.</td></tr>';
+    return;
+  }
+  list.forEach((row, i)=>{
+    const tr = document.createElement('tr');
+    const mine = highlightEntry && row.ts === highlightEntry.ts && row.name === highlightEntry.name;
+    if(mine) tr.style.color = 'var(--yellow)';
+    tr.innerHTML = `<td class="rank">${i+1}</td><td>${escapeHtml(row.name)}</td><td>${row.score}</td><td>${row.timeUsed}s</td>`;
+    tbody.appendChild(tr);
+  });
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+/* ---------------- MODUL 1: PEMBELAJARAN ---------------- */
+let lesson = { catIndex: 0 };
+function renderLessonTabs(){
+  const mod = MODULES[0];
+  const tabs = document.getElementById('lessonTabs');
+  tabs.innerHTML = '';
+  mod.categories.forEach((c, i)=>{
+    const b = document.createElement('button');
+    b.textContent = c.label.replace('Hazard ', '');
+    b.className = 'btn secondary';
+    b.style.width = 'auto'; b.style.padding = '6px 12px'; b.style.fontSize = '12.5px'; b.style.margin = '0';
+    if(i === lesson.catIndex){ b.style.background = 'var(--yellow)'; b.style.color = '#101820'; b.style.border = 'none'; }
+    b.onclick = ()=>{ lesson.catIndex = i; renderLessonTabs(); renderLessonCard(); };
+    tabs.appendChild(b);
+  });
+}
+function renderLessonCard(){
+  const mod = MODULES[0];
+  const c = mod.categories[lesson.catIndex];
+  document.getElementById('lessonCatTitle').textContent = c.label;
+  document.getElementById('lessonCatDef').textContent = c.def;
+  const ul = document.getElementById('lessonCatExamples');
+  ul.innerHTML = '';
+  c.examples.forEach(ex=>{ const li = document.createElement('li'); li.textContent = ex; ul.appendChild(li); });
+  const isLast = lesson.catIndex === mod.categories.length - 1;
+  document.getElementById('btnLessonNext').classList.toggle('hidden', isLast);
+  document.getElementById('btnStartQuiz').classList.toggle('hidden', !isLast);
+}
+function startLesson(){
+  state.modIndex = 0;
+  lesson.catIndex = 0;
+  renderLessonTabs();
+  renderLessonCard();
+  show('screen-lesson');
+}
+
+/* ---------------- MODUL 1: KUIZ ---------------- */
+let quiz = { qIndex: 0, correct: 0, startTs: 0, answered: false };
+function startQuiz(){
+  quiz = { qIndex: 0, correct: 0, startTs: Date.now(), answered: false };
+  renderQuizQuestion();
+  show('screen-quiz');
+}
+function renderQuizQuestion(){
+  const mod = MODULES[0];
+  const q = mod.quiz[quiz.qIndex];
+  document.getElementById('quizProgress').textContent = 'Soalan ' + (quiz.qIndex + 1) + '/' + mod.quiz.length;
+  document.getElementById('quizQuestion').textContent = q.q;
+  const wrap = document.getElementById('quizOptions');
+  wrap.innerHTML = '';
+  document.getElementById('quizExplain').style.display = 'none';
+  document.getElementById('btnQuizNext').disabled = true;
+  quiz.answered = false;
+  q.options.forEach((opt, i)=>{
+    const div = document.createElement('div');
+    div.className = 'modcard';
+    div.innerHTML = `<div class="txt"><b>${opt}</b></div>`;
+    div.onclick = ()=> answerQuiz(i, div);
+    wrap.appendChild(div);
+  });
+}
+function answerQuiz(i){
+  if(quiz.answered) return;
+  quiz.answered = true;
+  const mod = MODULES[0];
+  const q = mod.quiz[quiz.qIndex];
+  const wrap = document.getElementById('quizOptions');
+  Array.from(wrap.children).forEach((c, idx)=>{
+    if(idx === q.correct) c.style.borderColor = 'var(--green)';
+    else if(idx === i) c.style.borderColor = 'var(--red)';
+  });
+  if(i === q.correct) quiz.correct++;
+  const ex = document.getElementById('quizExplain');
+  ex.style.display = 'block';
+  ex.textContent = (i === q.correct ? 'Betul! ' : 'Kurang tepat. ') + q.explain;
+  document.getElementById('btnQuizNext').disabled = false;
+}
+async function finishQuiz(){
+  const mod = MODULES[0];
+  const timeUsed = Math.round((Date.now() - quiz.startTs) / 1000);
+  const score = quiz.correct * 20;
+
+  document.getElementById('resultModTitle').textContent = 'MODUL 1 — ' + mod.title.toUpperCase();
+  document.getElementById('resultHeadline').textContent = 'Kuiz selesai!';
+  document.getElementById('resultDesc').textContent = `Anda menjawab ${quiz.correct} daripada ${mod.quiz.length} soalan dengan betul.`;
+  document.getElementById('resFoundLabel').textContent = 'Jawapan betul';
+  document.getElementById('resScore').textContent = score;
+  document.getElementById('resFound').textContent = quiz.correct + '/' + mod.quiz.length;
+  document.getElementById('resTime').textContent = timeUsed + 's';
+
+  const entry = { name: state.name, score, timeUsed, ts: Date.now() };
+  const list = await pushLB(mod.id, entry);
+  renderLBTable(document.getElementById('resLBBody'), list.slice(0,10), entry);
+
+  show('screen-result');
+}
+
+/* ---------------- LEADERBOARD SCREEN ---------------- */
+let lbCurrentMod = 1;
+async function openLB(modId){
+  lbCurrentMod = modId;
+  const mod = MODULES.find(m=>m.id===modId);
+  document.getElementById('lbModTitle').textContent = 'Modul ' + mod.id + ' — ' + mod.title;
+  const tabs = document.getElementById('lbTabs');
+  tabs.innerHTML = '';
+  MODULES.forEach(m=>{
+    const b = document.createElement('button');
+    b.textContent = 'M' + m.id;
+    b.className = 'btn secondary';
+    b.style.width = 'auto';
+    b.style.padding = '6px 12px';
+    b.style.fontSize = '13px';
+    b.style.margin = '0';
+    if(m.id === modId){ b.style.background = 'var(--yellow)'; b.style.color = '#101820'; b.style.border='none'; }
+    b.onclick = ()=> openLB(m.id);
+    tabs.appendChild(b);
+  });
+  const list = await getLB(modId);
+  renderLBTable(document.getElementById('lbBody'), list.slice(0,10));
+  show('screen-lb');
+}
+
+/* ---------------- WIRE UP ---------------- */
+document.getElementById('btnStart').onclick = ()=>{
+  const v = document.getElementById('nameInput').value.trim();
+  if(!v){ document.getElementById('nameInput').focus(); return; }
+  state.name = v;
+  saveLastName(v);
+  document.getElementById('deviceName').textContent = v;
+  show('screen-device');
+};
+document.getElementById('btnBackToStart').onclick = ()=> show('screen-start');
+document.getElementById('pickTablet').onclick = ()=>{
+  state.device = 'tablet';
+  buildMenu();
+  show('screen-menu');
+};
+document.getElementById('pickVR').onclick = ()=>{
+  state.device = 'vr';
+  buildMenu();
+  show('screen-menu');
+};
+document.getElementById('btnChangeName').onclick = ()=> show('screen-start');
+document.getElementById('btnShowLB').onclick = ()=> openLB(1);
+document.getElementById('btnBackFromLB').onclick = ()=> show('screen-menu');
+document.getElementById('btnRetry').onclick = ()=> MODULES[state.modIndex].type === 'lesson' ? startQuiz() : startModule(state.modIndex);
+document.getElementById('btnToMenu').onclick = ()=>{ buildMenu(); show('screen-menu'); };
+document.getElementById('exitbtn').onclick = ()=>{
+  if(state.timer) clearInterval(state.timer);
+  state.ended = true; hud(false); buildMenu(); show('screen-menu');
+};
+document.getElementById('btnLessonNext').onclick = ()=>{
+  if(lesson.catIndex < MODULES[0].categories.length - 1){ lesson.catIndex++; renderLessonTabs(); renderLessonCard(); }
+};
+document.getElementById('btnLessonBack').onclick = ()=>{ buildMenu(); show('screen-menu'); };
+document.getElementById('btnStartQuiz').onclick = ()=> startQuiz();
+document.getElementById('btnQuizNext').onclick = ()=>{
+  const mod = MODULES[0];
+  if(quiz.qIndex < mod.quiz.length - 1){ quiz.qIndex++; renderQuizQuestion(); }
+  else { finishQuiz(); }
+};
+
+loadLastName();
+</script>
+</body>
+</html>
