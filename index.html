@@ -176,6 +176,7 @@
     </div>
     <h2 id="hazardModalTitle"></h2>
     <p id="hazardModalDesc"></p>
+    <p id="hazardModalProgress" style="color:var(--yellow);font-weight:700;font-size:14px;margin:-10px 0 18px 0;"></p>
     <button class="btn" id="hazardModalOk">Faham, Teruskan</button>
   </div>
 </div>
@@ -341,41 +342,41 @@ const MODULES = [
   {
     id:2, title:"Padang & Luar Kelas", sub:"Cari 5 hazard secepat mungkin di padang dan luar kelas", sky:"#8FC7E8", ground:"#4C8C4A", radius:16, emoji:"🌳", type:"hunt",
     items:[
-      {e:"⚡",n:"Aktiviti diteruskan semasa ribut petir",hazard:true,fb:"Petir amat berbahaya di kawasan terbuka dan boleh membawa maut."},
-      {e:"🕳️",n:"Lubang longkang tanpa penutup",hazard:true,fb:"Pelajar boleh tersepit kaki atau terjatuh ke dalam longkang terbuka."},
-      {e:"🏀",n:"Peralatan sukan bersepah di laluan",hazard:true,fb:"Peralatan bersepah menjadi punca pelajar tersadung dan jatuh."},
-      {e:"🥅",n:"Tiang gol senget dan rosak",hazard:true,fb:"Struktur senget boleh runtuh dan menimpa pelajar."},
-      {e:"🐝",n:"Sarang lebah di pokok berhampiran",hazard:true,fb:"Sarang serangga berbahaya boleh menyebabkan sengatan beramai-ramai."}
+      {e:"⚡",n:"Aktiviti diteruskan semasa ribut petir",hazard:true,fb:"Petir amat berbahaya di kawasan terbuka dan boleh membawa maut.",pos:[-3,1.5,-4]},
+      {e:"🕳️",n:"Lubang longkang tanpa penutup",hazard:true,fb:"Pelajar boleh tersepit kaki atau terjatuh ke dalam longkang terbuka.",pos:[-6,0.9,-2]},
+      {e:"🏀",n:"Peralatan sukan bersepah di laluan",hazard:true,fb:"Peralatan bersepah menjadi punca pelajar tersadung dan jatuh.",pos:[4,1.0,-2]},
+      {e:"🥅",n:"Tiang gol senget dan rosak",hazard:true,fb:"Struktur senget boleh runtuh dan menimpa pelajar.",pos:[0,1.4,-8.6]},
+      {e:"🐝",n:"Sarang lebah di pokok berhampiran",hazard:true,fb:"Sarang serangga berbahaya boleh menyebabkan sengatan beramai-ramai.",pos:[9,2.0,-4]}
     ]
   },
   {
     id:3, title:"Makmal & Bengkel", sub:"Cari 5 hazard secepat mungkin di makmal dan bengkel", sky:"#DDE6EC", ground:"#A9B4BC", radius:9, emoji:"🧪", type:"hunt",
     items:[
-      {e:"🧪",n:"Botol bahan kimia tanpa label",hazard:true,fb:"Bahan kimia tanpa label sukar dikenal pasti dan boleh menyebabkan kemalangan."},
-      {e:"🔥",n:"Bunsen burner menyala tanpa pengawasan",hazard:true,fb:"Api terbuka tanpa pengawasan berisiko menyebabkan kebakaran."},
-      {e:"🥽",n:"Pelajar tiada goggle semasa uji kaji",hazard:true,fb:"Tanpa PPE, mata terdedah kepada percikan bahan kimia."},
-      {e:"⚡",n:"Wayar terdedah pada mesin bengkel",hazard:true,fb:"Wayar terdedah berisiko menyebabkan kejutan elektrik."},
-      {e:"🪚",n:"Mesin gergaji tanpa penutup keselamatan",hazard:true,fb:"Bahagian mesin terdedah boleh menyebabkan kecederaan serius."}
+      {e:"🧪",n:"Botol bahan kimia tanpa label",hazard:true,fb:"Bahan kimia tanpa label sukar dikenal pasti dan boleh menyebabkan kemalangan.",pos:[-4.2,1.6,-5.6]},
+      {e:"🔥",n:"Bunsen burner menyala tanpa pengawasan",hazard:true,fb:"Api terbuka tanpa pengawasan berisiko menyebabkan kebakaran.",pos:[-2,1.1,-1.8]},
+      {e:"🥽",n:"Pelajar tiada goggle semasa uji kaji",hazard:true,fb:"Tanpa PPE, mata terdedah kepada percikan bahan kimia.",pos:[2,1.1,-1.8]},
+      {e:"⚡",n:"Wayar terdedah pada mesin bengkel",hazard:true,fb:"Wayar terdedah berisiko menyebabkan kejutan elektrik.",pos:[0,1.9,-5.5]},
+      {e:"🪚",n:"Mesin gergaji tanpa penutup keselamatan",hazard:true,fb:"Bahagian mesin terdedah boleh menyebabkan kecederaan serius.",pos:[4.2,1.6,-5.6]}
     ]
   },
   {
     id:4, title:"Kantin Sekolah", sub:"Cari 5 hazard secepat mungkin di kantin sekolah", sky:"#F6E9C9", ground:"#D9C79A", radius:9, emoji:"🍽️", type:"hunt",
     items:[
-      {e:"🍳",n:"Minyak panas terdedah berhampiran laluan",hazard:true,fb:"Minyak panas terdedah boleh menyebabkan kelecuran serius."},
-      {e:"💦",n:"Lantai basah tanpa tanda amaran",hazard:true,fb:"Lantai licin tanpa amaran meningkatkan risiko jatuh."},
-      {e:"🪰",n:"Makanan terdedah tanpa penutup",hazard:true,fb:"Makanan terdedah mudah dihinggapi lalat dan mencemarkan kesihatan."},
-      {e:"🛢️",n:"Tabung gas diletak dekat punca api",hazard:true,fb:"Tabung gas berhampiran api berisiko tinggi menyebabkan letupan."},
-      {e:"🚪",n:"Laluan kecemasan tersekat troli",hazard:true,fb:"Laluan tersekat menghalang proses pengosongan semasa kecemasan."}
+      {e:"🍳",n:"Minyak panas terdedah berhampiran laluan",hazard:true,fb:"Minyak panas terdedah boleh menyebabkan kelecuran serius.",pos:[-2,1.2,-5.3]},
+      {e:"💦",n:"Lantai basah tanpa tanda amaran",hazard:true,fb:"Lantai licin tanpa amaran meningkatkan risiko jatuh.",pos:[1.5,0.9,-1.5]},
+      {e:"🪰",n:"Makanan terdedah tanpa penutup",hazard:true,fb:"Makanan terdedah mudah dihinggapi lalat dan mencemarkan kesihatan.",pos:[2,1.2,-5.3]},
+      {e:"🛢️",n:"Tabung gas diletak dekat punca api",hazard:true,fb:"Tabung gas berhampiran api berisiko tinggi menyebabkan letupan.",pos:[0,1.1,-5.0]},
+      {e:"🚪",n:"Laluan kecemasan tersekat troli",hazard:true,fb:"Laluan tersekat menghalang proses pengosongan semasa kecemasan.",pos:[2.8,1.1,-4.2]}
     ]
   },
   {
     id:5, title:"Luar Sekolah — Lintasan Jalan", sub:"Cari 5 hazard secepat mungkin semasa melintas jalan raya", sky:"#A9C4D4", ground:"#4A4A4A", radius:16, emoji:"🚸", type:"hunt",
     items:[
-      {e:"🚗",n:"Kereta laju tanpa perlahan di zon sekolah",hazard:true,fb:"Kenderaan laju berhampiran sekolah amat berbahaya kepada pejalan kaki."},
-      {e:"🚸",n:"Pelajar melintas tanpa guna lintasan zebra",hazard:true,fb:"Melintas sembarangan meningkatkan risiko dilanggar kenderaan."},
-      {e:"📱",n:"Pelajar melintas sambil bertelefon",hazard:true,fb:"Perhatian terganggu menyebabkan pelajar terlepas pandang bahaya."},
-      {e:"🚧",n:"Tiada pengawal lalu lintas bertugas",hazard:true,fb:"Ketiadaan pengawasan meningkatkan risiko kemalangan waktu sesak."},
-      {e:"🚦",n:"Lampu isyarat lintasan rosak",hazard:true,fb:"Lampu isyarat rosak mengelirukan pejalan kaki dan pemandu."}
+      {e:"🚗",n:"Kereta laju tanpa perlahan di zon sekolah",hazard:true,fb:"Kenderaan laju berhampiran sekolah amat berbahaya kepada pejalan kaki.",pos:[3.2,1.0,-1.0]},
+      {e:"🚸",n:"Pelajar melintas tanpa guna lintasan zebra",hazard:true,fb:"Melintas sembarangan meningkatkan risiko dilanggar kenderaan.",pos:[-3.5,1.0,-1.0]},
+      {e:"📱",n:"Pelajar melintas sambil bertelefon",hazard:true,fb:"Perhatian terganggu menyebabkan pelajar terlepas pandang bahaya.",pos:[0,1.0,-0.6]},
+      {e:"🚧",n:"Tiada pengawal lalu lintas bertugas",hazard:true,fb:"Ketiadaan pengawasan meningkatkan risiko kemalangan waktu sesak.",pos:[-2,1.0,-2.0]},
+      {e:"🚦",n:"Lampu isyarat lintasan rosak",hazard:true,fb:"Lampu isyarat rosak mengelirukan pejalan kaki dan pemandu.",pos:[5,1.8,-2]}
     ]
   }
 ];
@@ -417,6 +418,8 @@ function buildEnvShapes(modId){
     s.push({t:'box',p:[0,2.4,-14],sz:[18,4.8,0.3],c:'#C9D3DA'});
     for(let i=-3;i<=3;i++) s.push({t:'box',p:[i*2.2,3.6,-13.85],sz:[0.9,0.9,0.05],c:'#8FC7E8'});
     s.push({t:'box',p:[-13,0.5,0],sz:[0.15,1,26],c:'#D8D8D8',rot:[0,0,0]});
+    s.push({t:'cylinder',p:[-6,0.01,-2],r:0.5,h:0.02,c:'#1A1A1A'});
+    s.push({t:'sphere',p:[4,0.16,-2],r:0.16,c:'#D4661E'});
     pushSign(s, 5.5, -5, 'PADANG DAN LUAR KELAS', 5.4, 1.3, 2.7);
   } else if(modId===3){ // Makmal & Bengkel
     s.push({t:'box',p:[0,2,-6],sz:[12,4,0.15],c:'#D7DDE2'});
@@ -442,6 +445,8 @@ function buildEnvShapes(modId){
       s.push({t:'cylinder',p:[tx,0.27,tz],r:0.05,h:0.55,c:'#8A8A8A'});
     }
     s.push({t:'box',p:[-5.9,1.6,4.5],sz:[0.05,3.2,1.3],c:'#8A5A34'});
+    s.push({t:'cylinder',p:[1.5,0.005,-1.5],r:0.55,h:0.01,c:'#8FC7E8'});
+    s.push({t:'cylinder',p:[0,0.35,-5.0],r:0.16,h:0.7,c:'#D64545'});
     pushSign(s, 0, -5.75, 'KANTIN SEKOLAH', 4.4, 1.0, 3.35);
   } else if(modId===5){ // Luar Sekolah - Lintasan Jalan
     s.push({t:'box',p:[0,0.04,5.5],sz:[16,0.08,3],c:'#B9B9B9'});
@@ -454,6 +459,8 @@ function buildEnvShapes(modId){
     s.push({t:'box',p:[-7,2.1,4.5],sz:[0.7,0.7,0.05],c:'#F2B705'});
     s.push({t:'box',p:[-9,0.45,1.5],sz:[1.9,0.7,0.9],c:'#7A2E2E'});
     s.push({t:'box',p:[9,0.45,-1.5],sz:[1.9,0.7,0.9],c:'#2E4F7A'});
+    s.push({t:'cylinder',p:[5,0.9,-2],r:0.06,h:1.8,c:'#909090'});
+    s.push({t:'box',p:[5,1.7,-2],sz:[0.28,0.6,0.15],c:'#2A2A2A'});
     pushSign(s, 5.5, -4.5, 'LUAR SEKOLAH / LINTASAN JALAN', 5.8, 1.3, 2.8);
   }
   return s;
@@ -466,6 +473,7 @@ function renderEnvironment(modId){
     if(spec.t==='box'){ el=document.createElement('a-box'); el.setAttribute('width',spec.sz[0]); el.setAttribute('height',spec.sz[1]); el.setAttribute('depth',spec.sz[2]); }
     else if(spec.t==='cylinder'){ el=document.createElement('a-cylinder'); el.setAttribute('radius',spec.r); el.setAttribute('height',spec.h); }
     else if(spec.t==='cone'){ el=document.createElement('a-cone'); el.setAttribute('radius-bottom',spec.r); el.setAttribute('radius-top',0.02); el.setAttribute('height',spec.h); }
+    else if(spec.t==='sphere'){ el=document.createElement('a-sphere'); el.setAttribute('radius',spec.r); }
     else if(spec.t==='plane'){ el=document.createElement('a-plane'); el.setAttribute('width',spec.sz[0]); el.setAttribute('height',spec.sz[1]); }
     else if(spec.t==='text'){
       el=document.createElement('a-text');
@@ -554,15 +562,21 @@ function startModule(i){
 
   const n = mod.items.length;
   mod.items.forEach((item, idx)=>{
-    // Sebarkan dalam lingkungan -115..+115 darjah dari arah pandangan permulaan,
-    // supaya SEMUA hazard boleh dijumpai dengan berpusing sederhana (bukan terus ke belakang).
-    const angle = n > 1 ? -115 + (idx / (n - 1)) * 230 : 0;
-    const rad = angle * Math.PI/180;
-    const radius = 3.4;
-    const x = Math.sin(rad)*radius;
-    const z = -Math.cos(rad)*radius;
-    const y = 1.3 + ((idx % 3) - 1) * 0.35;
-    const facing = angle + 180;
+    let x, y, z, facing;
+    if(item.pos){
+      // Kedudukan tetap berhampiran objek berkaitan dalam senario
+      [x, y, z] = item.pos;
+      facing = (Math.atan2(x, -z) * 180/Math.PI) + 180;
+    } else {
+      // Fallback: sebarkan dalam lingkungan -115..+115 darjah (elak terus di belakang)
+      const angle = n > 1 ? -115 + (idx / (n - 1)) * 230 : 0;
+      const rad = angle * Math.PI/180;
+      const radius = 3.4;
+      x = Math.sin(rad)*radius;
+      z = -Math.cos(rad)*radius;
+      y = 1.3 + ((idx % 3) - 1) * 0.35;
+      facing = angle + 180;
+    }
 
     const ent = document.createElement('a-entity');
     ent.setAttribute('position', `${x.toFixed(2)} ${y.toFixed(2)} ${z.toFixed(2)}`);
@@ -570,16 +584,18 @@ function startModule(i){
     ent.dataset.idx = idx;
 
     const glow = document.createElement('a-circle');
+    glow.setAttribute('class','hazard-glow');
     glow.setAttribute('radius','0.46');
-    glow.setAttribute('color','#F2B705');
-    glow.setAttribute('material','shader:flat;opacity:0.25');
+    glow.setAttribute('color','#FF3B3B');
+    glow.setAttribute('material','shader:flat;opacity:0.3');
     glow.setAttribute('position','0 0 -0.01');
-    glow.setAttribute('animation','property: scale; dir: alternate; dur: 1000; loop: true; to: 1.35 1.35 1.35; easing: easeInOutSine');
+    glow.setAttribute('animation','property: scale; dir: alternate; dur: 900; loop: true; to: 1.4 1.4 1.4; easing: easeInOutSine');
 
     const ring = document.createElement('a-ring');
+    ring.setAttribute('class','hazard-ring');
     ring.setAttribute('radius-inner','0.37');
     ring.setAttribute('radius-outer','0.43');
-    ring.setAttribute('color','#F2B705');
+    ring.setAttribute('color','#FF3B3B');
     ring.setAttribute('material','shader:flat');
     ring.setAttribute('position','0 0 -0.005');
 
@@ -690,11 +706,12 @@ function flash(msg, ok){
 }
 
 /* ---------------- HAZARD POPUP MODAL ---------------- */
-function openHazardModal(item){
+function openHazardModal(item, foundCount, totalCount){
   state.modalOpen = true;
   document.getElementById('hazardModalEmoji').textContent = item.e;
   document.getElementById('hazardModalTitle').textContent = item.n;
   document.getElementById('hazardModalDesc').textContent = item.fb;
+  document.getElementById('hazardModalProgress').textContent = '✅ ' + foundCount + '/' + totalCount + ' hazard dijumpai';
   document.getElementById('hazardModal').classList.remove('hidden');
 }
 function closeHazardModal(){
@@ -714,12 +731,16 @@ function handlePick(idx, ent, plate){
   const item = mod.items[idx];
   ent.dataset.done = '1';
   plate.setAttribute('color', '#1F5C43');
+  const glow = ent.querySelector('.hazard-glow');
+  const ring = ent.querySelector('.hazard-ring');
+  if(glow) glow.setAttribute('visible', 'false');
+  if(ring) ring.setAttribute('color', '#2E9E6D');
   state.found++;
   updateHudDisplays();
   if(state.found >= mod.items.length){
     state.pendingEnd = true;
   }
-  openHazardModal(item);
+  openHazardModal(item, state.found, mod.items.length);
 }
 
 async function endModule(allFound){
